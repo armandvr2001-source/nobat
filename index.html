@@ -76,6 +76,8 @@ input{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;ba
   <p class="note">روزهای کاری: یکشنبه تا چهارشنبه، ساعت ۹ تا ۱۰، ۱۳:۳۰ تا ۱۴:۳۰ و ۱۵:۳۰ تا ۱۶:۳۰.</p>
 </div>
 <script>
+// آدرس پروژه‌ی Supabase خودتان را جایگزین کنید (بدون / در انتها)
+const API="https://kbdqshzmgzunlkejzlsc.supabase.co/functions/v1/api";
 const WORK=[0,1,2,3];
 const SLOTS=[["09:00","10:00"],["13:30","14:30"],["15:30","16:30"]];
 const fa=n=>String(n).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
@@ -97,7 +99,7 @@ async function api(path,body){
     return{ok:r.ok,status:r.status,j};
   }catch(e){return{ok:false,status:0,j:{}}}
 }
-async function loadTaken(){const r=await api("/api/slots");if(r.ok){bk=r.j.taken||[];renderSlots()}}
+async function loadTaken(){const r=await api(API+"/slots");if(r.ok){bk=r.j.taken||[];renderSlots()}}
 
 function isPast(d,s){const [h,m]=s[0].split(":");const t=new Date(d);t.setHours(+h,+m,0,0);return t<new Date()}
 function taken(d,i){return bk.some(b=>b.d===key(d)&&b.s===i)}
@@ -120,7 +122,7 @@ $("nm").oninput=$("ph").oninput=check;
 $("go").onclick=async()=>{
   const d=days[selD],s=SLOTS[selS];
   $("go").disabled=true;
-  const r=await api("/api/book",{day:key(d),slot:selS,name:$("nm").value.trim(),phone:en($("ph").value.trim())});
+  const r=await api(API+"/book",{day:key(d),slot:selS,name:$("nm").value.trim(),phone:en($("ph").value.trim())});
   if(r.ok){
     $("out").innerHTML=`<div class="msg"><strong style="color:var(--ok)">نوبت ثبت شد.</strong><br>${esc(fmtD.format(d))}، ساعت ${fa(s[0])} تا ${fa(s[1])}</div>`;
     $("nm").value="";$("ph").value="";
@@ -132,7 +134,7 @@ $("go").onclick=async()=>{
 };
 
 async function renderList(){
-  const r=await api("/api/admin",{password:pw,action:"list"});
+  const r=await api(API+"/admin",{password:pw,action:"list"});
   if(!r.ok){pw="";$("login").hidden=false;$("list").innerHTML="";$("lerr").textContent=r.status===401?"رمز اشتباه است.":"خطا در دریافت لیست.";return}
   $("login").hidden=true;$("lerr").textContent="";
   const items=r.j.items||[];
@@ -143,7 +145,7 @@ async function renderList(){
 $("lg").onclick=()=>{pw=$("pw").value;$("pw").value="";renderList()};
 $("list").onclick=async e=>{
   const b=e.target.closest("button");if(!b||!confirm("این نوبت لغو شود؟"))return;
-  await api("/api/admin",{password:pw,action:"cancel",id:b.dataset.id});
+  await api(API+"/admin",{password:pw,action:"cancel",id:b.dataset.id});
   renderList();loadTaken();
 };
 
